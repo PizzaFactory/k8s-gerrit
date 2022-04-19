@@ -283,7 +283,8 @@ gerrit:
       # ssh_host_ecdsa_key.pub: ecdsa-sha2-nistp256...
 
   additionalConfigMaps:
-    # - name:
-    #   subDir:
+    # - baseDir: data # `data` and `etc` are valid. The default is `data`.
     #   data:
     #     file.txt: test
+    #   name:
+    #   subDir:

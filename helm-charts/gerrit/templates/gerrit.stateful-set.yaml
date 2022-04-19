@@ -100,10 +100,10 @@ spec:
 
           mkdir -p /var/gerrit/data
           {{- range .Values.gerrit.additionalConfigMaps }}
-          if [ -d /var/mnt/data ]; then
-            for file in $(find /var/mnt/data/{{ .subDir }} -type f); do
-              mkdir -p /var/gerrit/data/{{ .subDir }}
-              ln -sf $file /var/gerrit/data/{{ .subDir }}/$(basename $file)
+          if [ -d /var/mnt/additional-{{ .baseDir | default "data" }} ]; then
+            for file in $(find /var/mnt/additional-{{ .baseDir | default "data" }}/{{ .subDir }} -type f); do
+              mkdir -p /var/gerrit/{{ .baseDir | default "data" }}/{{ .subDir }}
+              ln -sf $file /var/gerrit/{{ .baseDir | default "data" }}/{{ .subDir }}/$(basename $file)
             done
           fi
           {{- end }}
@@ -159,8 +159,12 @@ spec:
           mountPath: "/var/config/ca.crt"
         {{- end }}
         {{- range .Values.gerrit.additionalConfigMaps }}
+        {{- if and (hasKey . "baseDir") .baseDir (ne .baseDir "etc") (ne .baseDir "data") }} 
+        {{ fail "Unsupported value in .Values.gerrit.additionalConfigMaps[].baseDir" }}
+        {{- else }}
         - name: {{ .name }}
-          mountPath: "/var/mnt/data/{{ .subDir }}"
+          mountPath: '/var/mnt/additional-{{ .baseDir | default "data" }}/{{ .subDir }}'
+        {{- end }}
         {{- end }}
       containers:
       - name: gerrit
@@ -195,7 +199,7 @@ spec:
           mountPath: "/var/mnt/etc/secret"
         {{- range .Values.gerrit.additionalConfigMaps }}
         - name: {{ .name }}
-          mountPath: "/var/mnt/data/{{ .subDir }}"
+          mountPath: '/var/mnt/additional-{{ .baseDir | default "data" }}/{{ .subDir }}'
         {{- end }}
         resources:
 {{ toYaml .Values.gerrit.resources | indent 10 }}
