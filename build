@@ -42,10 +42,8 @@ export REV="$(git describe --always --dirty)"
 docker_build(){
     IMAGE=$1
 
-    docker build \
-        --platform=linux/amd64 \
-        --build-arg TAG=$REV \
-        -t k8sgerrit/$IMAGE:$TAG \
+    docker build -t k8sgerrit/$IMAGE:$TAG \
+        -t ghcr.io/pizzafactory/k8s-gerrit/$IMAGE:$GIT_REV_TAG \
         ./container-images/$IMAGE
 
     if test $? -ne 0; then
